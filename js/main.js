@@ -3,8 +3,9 @@ let colorPrimary = null;
 let isTurnX = null;
 let playerWinner = null;
 const boards = document.querySelectorAll(".board");
+const nameItemInStorage = 'puntuacion';
 
-function resetAllLetDependencies() {
+function resetAllVarsDependencies() {
     state = [
         [null, null, null],
         [null, null, null],
@@ -15,61 +16,43 @@ function resetAllLetDependencies() {
     playerWinner = null;
 }
 
-resetAllLetDependencies();
+resetAllVarsDependencies();
 
 function populate(board) {
+    updateInfoHeader({ board, textTitle: '¡Empezamos!', addSvg: false });
     updateBoard(board);
-}
-
-// Función que cambia el svg del Header
-function updateTitleBoard(board) {
-    const title = board.querySelector(".board__header .title");
-    const titleSvg = board.querySelector(".board__header .title svg");
-    const svgX = board.querySelector('.board__footer--item .icon.x').cloneNode(true);
-    const svgCircle = board.querySelector('.board__footer--item .icon.o').cloneNode(true);
-
-    let svg = "";
-
-    if (!isTurnX) {
-        svg = svgCircle;
-    } else {
-        svg = svgX;
-    }
-
-    if (titleSvg) {
-        title.removeChild(titleSvg);
-    }
-
-    title.append(svg);
 }
 
 function nextPlayer(board) {
 
-    const titleSpan = board.querySelector(".board__header .title span");
-    titleSpan.textContent = "Turno de: ";
+    // Cambiando el svg del Header y el texto del title
+    updateInfoHeader({ board, textTitle: 'Turno de: ' });
 
-    // Cambiando el svg del Header
-    updateTitleBoard(board);
     updateBoard(board);
     findWinner(board);
 }
 
-function findMatchByOffset({ positionInitial, offset }) {
+function vectorOneDimensional() {
 
-    let vectorOnedimensional = [];
+    let vectorOneDimensional = [];
     // Rellenamos en una matriz unidimencional el state, para buscar de manera más fácil
     for (let i = 0; i < state.length; i++) {
         const row = state[i];
         for (let j = 0; j < row.length; j++) {
-            vectorOnedimensional.push(row[j]);
+            vectorOneDimensional.push(row[j]);
         }
     }
+
+    return vectorOneDimensional || [];
+}
+
+function findMatchByOffset({ positionInitial, offset }) {
 
     let subVector = [];
     let winner = null;
 
     for (let i = 0; i < state[0].length; i++) {
-        subVector.push(vectorOnedimensional[i * offset + positionInitial]);
+        subVector.push(vectorOneDimensional()[i * offset + positionInitial]);
     }
 
     if (subVector.every(item => item === 'x')) {
@@ -85,7 +68,7 @@ function findMatchByOffset({ positionInitial, offset }) {
 function updatePuntuacion(board) {
     const totalWinnerX = board.querySelector('.total__board--x');
     const totalWinnerO = board.querySelector('.total__board--circle');
-    const puntuacion = JSON.parse(sessionStorage.getItem('puntuacion'));
+    const puntuacion = JSON.parse(sessionStorage.getItem(nameItemInStorage));
 
     totalWinnerX.textContent = puntuacion?.x || 0;
     totalWinnerO.textContent = puntuacion?.o || 0;
@@ -123,11 +106,7 @@ function findWinner(board) {
             offset: 1,
         },
         {
-            positionInitial: 4,
-            offset: 1,
-        },
-        {
-            positionInitial: 5,
+            positionInitial: 6,
             offset: 1,
         },
     ];
@@ -141,25 +120,30 @@ function findWinner(board) {
     }
 
     if (playerWinner) {
-        const titleSpan = board.querySelector(".board__header .title span");
-        const puntuacion = JSON.parse(sessionStorage.getItem('puntuacion') ? sessionStorage.getItem('puntuacion') : JSON.stringify({
+
+        const puntuacion = JSON.parse(sessionStorage.getItem(nameItemInStorage) ? sessionStorage.getItem(nameItemInStorage) : JSON.stringify({
             'x': 0,
             'o': 0,
         }));
 
         playerWinner === 'x' ? puntuacion.x++ : playerWinner === 'o' ? puntuacion.o++ : '';
 
-        titleSpan.textContent = "Ha ganado: ";
-
-        // Devolvemos el ganador a la posición anterior
+        // Devolvemos el ganador a la posición anterior, o sea, al jugador que acabó su turno
         isTurnX = !isTurnX;
 
-        // Cambiando el svg del Header
-        updateTitleBoard(board);
+        // Cambiando el svg del Header y el texto del title
+        updateInfoHeader({ board, textTitle: 'Ha ganado: ' });
 
-        board.querySelector('.nuevo__juego').removeAttribute('disabled');
-        sessionStorage.setItem('puntuacion', JSON.stringify(puntuacion));
+        activeButtonNewBoard(board);
+        sessionStorage.setItem(nameItemInStorage, JSON.stringify(puntuacion));
         updatePuntuacion(board);
+
+    }
+    else {
+        if (!vectorOneDimensional().some(item => item === null)) {
+            updateInfoHeader({ board, textTitle: '¡Tablas!', addSvg: false });
+            activeButtonNewBoard(board);
+        }
     }
 }
 
@@ -215,24 +199,41 @@ function updateBoard(board) {
     updatePuntuacion(board);
 }
 
-function resetAllHeader(board) {
+// Función que actualiza la información del Header en función de los parámetros
+function updateInfoHeader({ board, textTitle = null, addSvg = true }) {
     const title = board.querySelector(".board__header .title");
     const titleSpan = board.querySelector(".board__header .title span");
-    titleSpan.textContent = '¡Empezamos!';
     const titleSvg = board.querySelector(".board__header .title svg");
+    const svgX = board.querySelector('.board__footer--item .icon.x').cloneNode(true);
+    const svgCircle = board.querySelector('.board__footer--item .icon.o').cloneNode(true);
+    const svg = !isTurnX ? svgCircle : svgX;
 
     if (titleSvg) {
         title.removeChild(titleSvg);
     }
+    if (addSvg) {
+        title.append(svg);
+    }
 
+    if (textTitle) {
+        titleSpan.textContent = textTitle;
+    }
+}
+
+function activeButtonNewBoard(board, disabled = false) {
+    if (disabled) {
+        board.querySelector('.nuevo__juego').setAttribute('disabled', 'disabled');
+    }
+    else {
+        board.querySelector('.nuevo__juego').removeAttribute('disabled');
+    }
 }
 
 function newBoard(board) {
-    resetAllLetDependencies();
-    resetAllHeader(board);
+    resetAllVarsDependencies();
+    updateInfoHeader({ board, textTitle: '¡Empezamos!', addSvg: false });
     updateBoard(board);
-    board.querySelector('.nuevo__juego').setAttribute('disabled', 'disabled');
-    playerWinner = null;
+    activeButtonNewBoard(board, true);
 }
 
 boards.forEach((board) => {
@@ -265,7 +266,7 @@ boards.forEach((board) => {
 
         if (findParentButtonCambiarColor) {
 
-            // Cambiamos el valor de colorPrimary para que actualice la url de la imagen
+            // Cambiamos el valor de colorPrimary para que actualice la clase del svg cuando se renderice
             colorPrimary = !colorPrimary;
 
             // Cambiamos los svg de la puntuación
@@ -274,8 +275,8 @@ boards.forEach((board) => {
                 item.querySelector("svg")?.classList?.toggle("secundary");
             });
 
-            // Cambiando el svg del Header
-            updateTitleBoard(board);
+            // Cambiando el svg del Header en función de si existe algún valor en la matriz state, o sea, si hay algún valor que no es null y hay algún valor que es null, o sea, que sean mixtos, esto significa que hay casillas por rellenar y el juego no ha terminado, en ese caso añadimos (actualizamos el svg)
+            updateInfoHeader({ board, addSvg: vectorOneDimensional().some(item => item !== null) && (vectorOneDimensional().some(item => item === null || playerWinner)) })
 
             updateBoard(board);
 
