@@ -182,8 +182,6 @@ body {
             }
         }
     }
-    &__body {
-    }
     &__footer {
         .puntuacion {
             margin: 0 32px 8px 27px;
@@ -234,6 +232,9 @@ body {
         box-shadow: 0 2px 4px 0 rgba(121, 122, 122, 0.4);
         background-color: $c-white;
         cursor: pointer;
+        .icon {
+            margin: 0;
+        }
         &.x {
             background-color: $c-green-2;
             &.secundary {
