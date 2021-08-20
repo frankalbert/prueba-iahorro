@@ -2,9 +2,13 @@ $c-white: #fff;
 $c-primary: #173259;
 $c-grey: #e2e5e9;
 $c-grey-2: #dfe0e0;
+$c-grey-3: #edf0f5;
 $c-green: #29ddb9;
+$c-green-2: #e5fffa;
 $c-orange: #e9c05c;
+$c-orange-2: #fff3f2;
 $c-red: #fa7064;
+$c-yellow: #faf3db;
 $c-blue-dark: #5a6d88;
 
 body {
@@ -109,21 +113,21 @@ body {
     width: 32px;
     height: 32px;
     margin: 0 7px 0 0;
-}
-.o {
-    * {
-        stroke: $c-green;
+    &.o {
+        * {
+            stroke: $c-green;
+        }
+        &.secundary * {
+            stroke: $c-orange;
+        }
     }
-    &.secundary * {
-        stroke: $c-orange;
-    }
-}
-.x {
-    * {
-        fill: $c-red;
-    }
-    &.secundary * {
-        fill: $c-blue-dark;
+    &.x {
+        * {
+            fill: $c-red;
+        }
+        &.secundary * {
+            fill: $c-blue-dark;
+        }
     }
 }
 .button {
@@ -146,16 +150,18 @@ body {
         font-style: normal;
         line-height: normal;
         letter-spacing: -0.23px;
-        &.disabled {
+        background-color: $c-green;
+        border: 1px solid $c-green;
+        color: $c-white;
+        &:disabled {
             background-color: $c-grey-2;
             border: 1px solid $c-grey-2;
             cursor: not-allowed;
             pointer-events: none;
-            color: #fff;
         }
     }
 }
-.game {
+.board {
     &__header {
         padding: 24px 0;
         .title {
@@ -189,8 +195,8 @@ body {
             letter-spacing: -0.25px;
             color: $c-grey-2;
         }
-        .total__game {
-            margin: 1px 0 2px 7px;
+        .total__board {
+            margin: 1px 0 0 7px;
             font-family: Montserrat;
             font-size: 24px;
             font-weight: bold;
@@ -202,6 +208,7 @@ body {
         }
         &--item {
             margin: 16px 30px 0 0;
+            pointer-events: none;
             &:last-of-type {
                 margin-right: 0;
             }
@@ -226,6 +233,18 @@ body {
         box-shadow: 0 2px 4px 0 rgba(121, 122, 122, 0.4);
         background-color: $c-white;
         cursor: pointer;
+        &.x {
+            background-color: $c-green-2;
+            &.secundary {
+                background-color: $c-yellow;
+            }
+        }
+        &.o {
+            background-color: $c-orange-2;
+            &.secundary {
+                background-color: $c-grey-3;
+            }
+        }
         img {
             width: 60px;
         }
