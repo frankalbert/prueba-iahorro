@@ -1,10 +1,7 @@
-const pathImage = "http://cdn.iahorro.com/internal-resources/it-technical-test/";
 let state = null;
-
 let colorPrimary = null;
 let isTurnX = null;
 let playerWinner = null;
-
 const boards = document.querySelectorAll(".board");
 
 function resetAllLetDependencies() {
@@ -90,8 +87,8 @@ function updatePuntuacion(board) {
     const totalWinnerO = board.querySelector('.total__board--circle');
     const puntuacion = JSON.parse(sessionStorage.getItem('puntuacion'));
 
-    totalWinnerX.textContent = puntuacion.x;
-    totalWinnerO.textContent = puntuacion.o;
+    totalWinnerX.textContent = puntuacion?.x || 0;
+    totalWinnerO.textContent = puntuacion?.o || 0;
 }
 
 function findWinner(board) {
