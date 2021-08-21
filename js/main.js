@@ -2,6 +2,7 @@ let state = null;
 let colorPrimary = null;
 let isTurnX = null;
 let playerWinner = null;
+let vectorOneDimensional = null;
 const boards = document.querySelectorAll(".board");
 const nameItemInStorage = 'puntuacion';
 
@@ -14,6 +15,7 @@ function resetAllVarsDependencies() {
     colorPrimary = true;
     isTurnX = true;
     playerWinner = null;
+    vectorOneDimensional = [];
 }
 
 resetAllVarsDependencies();
@@ -27,14 +29,15 @@ function nextPlayer(board) {
 
     // Cambiando el svg del Header y el texto del title
     updateInfoHeader({ board, textTitle: 'Turno de: ' });
-
+    updateVectorOneDimensional();
     updateBoard(board);
     findWinner(board);
 }
 
-function vectorOneDimensional() {
+function updateVectorOneDimensional() {
 
-    let vectorOneDimensional = [];
+    vectorOneDimensional = [];
+
     // Rellenamos en una matriz unidimencional el state, para buscar de manera más fácil
     for (let i = 0; i < state.length; i++) {
         const row = state[i];
@@ -42,8 +45,6 @@ function vectorOneDimensional() {
             vectorOneDimensional.push(row[j]);
         }
     }
-
-    return vectorOneDimensional || [];
 }
 
 function findMatchByOffset({ positionInitial, offset }) {
@@ -52,7 +53,7 @@ function findMatchByOffset({ positionInitial, offset }) {
     let winner = null;
 
     for (let i = 0; i < state[0].length; i++) {
-        subVector.push(vectorOneDimensional()[i * offset + positionInitial]);
+        subVector.push(vectorOneDimensional[i * offset + positionInitial]);
     }
 
     if (subVector.every(item => item === 'x')) {
@@ -140,7 +141,7 @@ function findWinner(board) {
 
     }
     else {
-        if (!vectorOneDimensional().some(item => item === null)) {
+        if (!vectorOneDimensional.some(item => item === null)) {
             updateInfoHeader({ board, textTitle: '¡Tablas!', addSvg: false });
             activeButtonNewBoard(board);
         }
@@ -252,35 +253,29 @@ boards.forEach((board) => {
             }
         }
 
-        const findParentButtonNewBoard = parents.find((parent) => {
-            return parent?.className?.includes("nuevo__juego");
+    });
+
+    // Asignamos el click en el botón de nuevo juego
+    board.querySelector('.nuevo__juego').addEventListener('click', function () {
+        newBoard(board);
+    });
+
+    // Asignamos el click en el botón de cambiar color, por cada uno de los boards que existan
+    board.querySelector('.cambiar__color').addEventListener('click', function () {
+
+        // Cambiamos el valor de colorPrimary para que actualice la clase del svg cuando se renderice
+        colorPrimary = !colorPrimary;
+
+        // Cambiamos los svg de la puntuación
+        const svgPuntuacion = board.querySelectorAll(".board__footer--item");
+        svgPuntuacion.forEach((item) => {
+            item.querySelector("svg")?.classList?.toggle("secundary");
         });
 
-        if (findParentButtonNewBoard) {
-            newBoard(board);
-        }
+        // Cambiando el svg del Header en función de si existe algún valor en la matriz state, o sea, si hay algún valor que no es null y hay algún valor que es null y no haya ganado ningún jugador, o sea, que sean mixtos, esto significa que hay casillas por rellenar y el juego no ha terminado o que el juego ha terminado y hubo un ganador, en ese caso añadimos (actualizamos el svg)
+        updateInfoHeader({ board, addSvg: vectorOneDimensional.some(item => item !== null) && (vectorOneDimensional.some(item => item === null || playerWinner)) })
 
-        const findParentButtonCambiarColor = parents.find((parent) => {
-            return parent?.className?.includes("cambiar__color");
-        });
-
-        if (findParentButtonCambiarColor) {
-
-            // Cambiamos el valor de colorPrimary para que actualice la clase del svg cuando se renderice
-            colorPrimary = !colorPrimary;
-
-            // Cambiamos los svg de la puntuación
-            const svgPuntuacion = board.querySelectorAll(".board__footer--item");
-            svgPuntuacion.forEach((item) => {
-                item.querySelector("svg")?.classList?.toggle("secundary");
-            });
-
-            // Cambiando el svg del Header en función de si existe algún valor en la matriz state, o sea, si hay algún valor que no es null y hay algún valor que es null, o sea, que sean mixtos, esto significa que hay casillas por rellenar y el juego no ha terminado, en ese caso añadimos (actualizamos el svg)
-            updateInfoHeader({ board, addSvg: vectorOneDimensional().some(item => item !== null) && (vectorOneDimensional().some(item => item === null || playerWinner)) })
-
-            updateBoard(board);
-
-        }
+        updateBoard(board);
 
     });
 });
