@@ -10,7 +10,7 @@ function resetAllVarsDependencies() {
     state = [
         [null, null, null],
         [null, null, null],
-        [null, null, null]
+        [null, null, null],
     ];
     colorPrimary = true;
     isTurnX = true;
@@ -77,43 +77,56 @@ function updatePuntuacion(board) {
 
 function findWinner(board) {
 
-    const vectorToSearch = [
-        {
-            positionInitial: 0,
-            offset: 1,
-        },
-        {
-            positionInitial: 0,
-            offset: 3,
-        },
-        {
-            positionInitial: 0,
-            offset: 4,
-        },
-        {
-            positionInitial: 1,
-            offset: 3,
-        },
-        {
-            positionInitial: 2,
-            offset: 2,
-        },
-        {
-            positionInitial: 2,
-            offset: 3,
-        },
-        {
-            positionInitial: 3,
-            offset: 1,
-        },
-        {
-            positionInitial: 6,
-            offset: 1,
-        },
-    ];
+    // Esta matriz, contendrá todas las combinaciones para encontrar un ganador, guardará un objeto con la posición inicial y el salto a buscar
+    const combinationToSearch = [];
 
-    for (let i = 0; i < vectorToSearch.length; i++) {
-        const resultFind = findMatchByOffset(vectorToSearch[i]);
+    for (let i = 0; i < state.length; i++) {
+        const stateLength = state.length;
+        //  La primera posición es la que más combinaciones tendrá, porque tendrá la de su fila correspondiente, la de su columna correspondiente y la diagonal principal
+        if (i === 0) {
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: 1,
+            })
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: stateLength,
+            })
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: stateLength + 1,
+            })
+        }
+        //  Esta casuística es para cuando estamos en la última columna de la primera fila, en este caso se cubrirá la diagonal secundaria y su columna correspondiente
+        else if (i === (stateLength - 1)) {
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: stateLength - 1,
+            })
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: stateLength,
+            });
+        }
+        // Cubrimos el resto de columnas, excepto la primera y la última
+        else {
+            combinationToSearch.push({
+                positionInitial: i,
+                offset: stateLength,
+            })
+        }
+
+        // Cubrimos las filas, excepto la primera
+        if (((i * stateLength % stateLength) === 0) && (i !== 0)) {
+            combinationToSearch.push({
+                positionInitial: i * stateLength,
+                offset: 1,
+            });
+        }
+    }
+
+    for (let i = 0; i < combinationToSearch.length; i++) {
+        const resultFind = findMatchByOffset(combinationToSearch[i]);
         if (resultFind) {
             playerWinner = resultFind;
             break;
